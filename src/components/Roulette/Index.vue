@@ -1,9 +1,9 @@
 <script setup>
 import { get, set } from "@vueuse/core";
-import { last, map, sumBy } from "lodash-es";
+import { map, sumBy } from "lodash-es";
 import { computed, ref } from "vue";
+import Neural from "../../strategies/Neural";
 
-const wagerPattern = [5, 8, 13, 20, 35, 50, 75, 100];
 const chipValues = [
   0.00000001,
   0.0000001,
@@ -13,28 +13,13 @@ const chipValues = [
 ];
 const chipValue = ref(0.00001);
 
-const initRound = (
-    {
-      index,
-      wager
-    }
-) => ({
-  index,
-  wager,
-  id: (new Date()).valueOf(),
-  bet: false,
-  betting: false,
-  won: false,
-  margin: wager * -1
-});
-
 const initWager = ref(5);
 const rounds = ref([]);
 const total = computed(() => sumBy(get(rounds).filter(_ => _?.bet), _ => _.margin));
 const totalBtc = computed(() => get(total) * get(chipValue));
 
 const handleStartSession = () => {
-  set(rounds, [initRound({
+  set(rounds, [Neural.init({
     index: 1,
     wager: get(initWager)
   })]);
@@ -48,61 +33,21 @@ const handleBet = round => {
   } : _));
 };
 
-const generateNextRound = () => {
-  const _rounds = get(rounds);
-  const lastRound = last(_rounds);
-  const lastWagerIndex = wagerPattern.findIndex(_ => _ === lastRound.wager);
-
-  let wager;
-
-  if (lastRound.won) {
-    /////////
-    // win //
-    /////////
-    let level;
-
-    // 1.
-    // if two consecutive wagers are won
-    // or if two out of three wagers are won
-    // the next wager is two levels lower
-    if (
-        (_rounds.length >= 3 && (_rounds.slice(-3).filter(_ => _?.won).length >= 2)) ||
-        (lastRound.wager >= 50)
-    ) {
-      level = 2;
-    } else {
-      // 2.
-      // the next wager will be one level lower
-      level = 1;
-    }
-
-    wager = wagerPattern[lastWagerIndex - level < 0 ? 0 : lastWagerIndex - level];
-  } else {
-    //////////
-    // lose //
-    //////////
-
-    // the next wager wil be on level higher
-    wager = wagerPattern[lastWagerIndex + 1 > _rounds.length ? _rounds.length : lastWagerIndex + 1];
-  }
-
-  set(rounds, [..._rounds, initRound({
-    index: _rounds.length + 1,
-    wager
-  })]);
-};
-
 const handleSaveResult = (round, won) => {
   set(rounds, map(get(rounds), _ => _.id === round.id ? {
     ...round,
     betting: false,
     bet: true,
     won,
-    margin: won ? round.wager * 2 : round.wager * -1
+    margin: won ? round.wager : round.wager * -1
   } : _));
 
+  const _rounds = get(rounds);
   // generate next round's wager
-  generateNextRound();
+  set(rounds, [..._rounds, Neural.init({
+    index: _rounds.length + 1,
+    wager: Neural.next(_rounds)
+  })]);
 };
 
 const handleReset = () => {
@@ -152,7 +97,7 @@ const handleExportToCsv = () => {
     <h1>
       <a
           :href="`https://www.google.com/search?q=${totalBtc}+btc+to+aud`"
-          :style="{ 'text-decoration': 'none', color: `${total > 90 ? 'green' : (total < 0 ? 'red' : 'inherit') }` }"
+          :style="{ 'text-decoration': 'none', color: `${total >= 50 ? 'green' : (total < 0 ? 'red' : 'inherit') }` }"
           target="_blank"
       >
         <b>${{ total }}</b>
@@ -194,11 +139,9 @@ const handleExportToCsv = () => {
       </tr>
     </table>
 
-    <template v-show="rounds.length">
-      <button class="btn-export" @click="handleExportToCsv">Export</button>
-      <hr>
-      <button class="btn-reset" @click="handleReset">Reset</button>
-    </template>
+    <hr>
+    <button class="btn-export" @click="handleExportToCsv">Export</button>
+    <button class="btn-reset" @click="handleReset">Reset</button>
   </div>
 </template>
 
@@ -216,11 +159,17 @@ table td {
 }
 
 table .action {
-  text-align: right;
+  display: flex;
+  justify-content: space-between;
 }
 
-.btn-export {
-  margin-top: 3rem;
+.btn-export,
+.btn-reset {
+  min-width: 75px;
+}
+
+.btn-export + .btn-reset {
+  margin-left: 1rem;
 }
 
 .btn-reset {
