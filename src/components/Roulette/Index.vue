@@ -24,14 +24,13 @@ const initRound = (
   id: (new Date()).valueOf(),
   bet: false,
   betting: false,
-  won: false
+  won: false,
+  margin: wager * -1
 });
 
 const initWager = ref(5);
 const rounds = ref([]);
-const total = computed(() => sumBy(
-    get(rounds).filter(_ => _?.bet), _ => _.won ? _.wager : _.wager * -1)
-);
+const total = computed(() => sumBy(get(rounds).filter(_ => _?.bet), _ => _.margin));
 const totalBtc = computed(() => get(total) * get(chipValue));
 
 const handleStartSession = () => {
@@ -95,7 +94,8 @@ const handleSaveResult = (round, won) => {
     ...round,
     betting: false,
     bet: true,
-    won
+    won,
+    margin: won ? round.wager * 2 : round.wager * -1
   } : _));
 
   // generate next round's wager
