@@ -5,6 +5,7 @@ import { computed, ref } from "vue";
 import Neural from "../../strategies/Neural";
 
 const level5 = Neural.level(5);
+
 const chipValues = [
   0.00000001,
   0.0000001,
@@ -12,12 +13,15 @@ const chipValues = [
   0.00001,
   0.0001
 ];
-const chipValue = ref(0.0001);
+const selectedChip = ref(0.0001);
+
+const coins = ["BTC", "LTC"];
+const selectedCoin = ref("BTC");
 
 const initWager = ref(5);
 const rounds = ref([]);
 const total = computed(() => sumBy(get(rounds).filter(_ => _?.bet), _ => _.margin));
-const totalBtc = computed(() => get(total) * get(chipValue));
+const totalBtc = computed(() => get(total) * get(selectedChip));
 
 const handleStartSession = () => {
   set(rounds, [Neural.init({
@@ -78,16 +82,12 @@ const handleExportToCsv = () => {
   <div>
     <section class="chip-value-wrapper">
       <label for="chip-value" style="padding-right: 15px;">Chip Value: </label>
-      <select id="chip-value" v-model="chipValue">
-        <option
-            v-for="v of chipValues"
-            :key="v"
-            :value="v"
-        >
-          {{ v }}
-        </option>
+      <select id="chip-value" v-model="selectedChip">
+        <option v-for="v of chipValues" :key="v" :value="v">{{ v }}</option>
       </select>
-      BTC
+      <select v-model="selectedCoin" style="margin-left: 15px;">
+        <option v-for="c of coins" :key="c" :value="c">{{ c }}</option>
+      </select>
     </section>
 
     <form @submit.prevent="handleStartSession">
@@ -95,15 +95,17 @@ const handleExportToCsv = () => {
       <button :disabled="rounds.length">Start</button>
     </form>
 
-    <h1>
-      <a
-          :href="`https://www.google.com/search?q=${totalBtc}+btc+to+aud`"
-          :style="{ 'text-decoration': 'none', color: `${total >= level5 ? 'green' : (total < 0 ? 'red' : 'inherit') }` }"
-          target="_blank"
-      >
-        <b>${{ total }}</b>
-      </a>
-    </h1>
+    <header>
+      <h1>
+        <a
+            :href="`https://www.google.com/search?q=${totalBtc}+${selectedCoin}+to+aud`"
+            :style="{ 'text-decoration': 'none', color: `${total >= level5 ? 'green' : (total < 0 ? 'red' : 'inherit') }` }"
+            target="_blank"
+        >
+          <b>${{ total }}</b>
+        </a>
+      </h1>
+    </header>
 
     <table v-show="rounds.length">
       <tr>
@@ -123,30 +125,27 @@ const handleExportToCsv = () => {
         </td>
         <td>{{ (!round.bet || round.betting) ? "-" : (round.won ? "&#128526" : "&#128545") }}</td>
         <td class="action">
-          <button :disabled="round.bet" @click="handleBet(round)">&#128640</button>
-          <button
-              @click="handleSaveResult(round, true)"
-              :disabled="!round.betting"
-          >
-            &#128077
-          </button>
-          <button
-              :disabled="!round.betting"
-              @click="handleSaveResult(round, false)"
-          >
-            &#128078
-          </button>
+          <button v-if="!round.bet" @click="handleBet(round)">&#128640</button>
+          <template v-if="round.betting">
+            <button @click="handleSaveResult(round, true)">&#128077</button>
+            <button @click="handleSaveResult(round, false)">&#128078</button>
+          </template>
         </td>
       </tr>
     </table>
 
-    <hr>
     <button class="btn-export" @click="handleExportToCsv">Export</button>
     <button class="btn-reset" @click="handleReset">Reset</button>
   </div>
 </template>
 
 <style scoped>
+select,
+input {
+  width: auto;
+  display: inline-block;
+}
+
 .chip-value-wrapper {
   margin-bottom: 1rem;
 }
@@ -155,13 +154,29 @@ table {
   margin: 2rem auto 0;
 }
 
-table td {
-  min-width: 120px;
+@media only screen and (max-width: 800px) {
+  #app {
+    margin-top: 10px !important;
+  }
+
+  h1 {
+    padding: 0;
+  }
+
+  table {
+    margin-top: 0;
+  }
+}
+
+td, th {
+  padding: 0.2rem;
+  text-align: center;
 }
 
 table .action {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-evenly;
+  min-width: 140px;
 }
 
 .btn-export,

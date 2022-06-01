@@ -4,7 +4,7 @@ const pattern = [5, 8, 13, 20, 35, 50, 75, 100];
 
 export default class Neural {
   static level(index) {
-    return pattern[index];
+    return pattern[index - 1];
   }
 
   static init(
