@@ -1,8 +1,12 @@
 import { last } from "lodash-es";
 
-const wagerPattern = [5, 8, 13, 20, 35, 50, 75, 100];
+const pattern = [5, 8, 13, 20, 35, 50, 75, 100];
 
 export default class Neural {
+  static level(index) {
+    return pattern[index];
+  }
+
   static init(
     {
       index,
@@ -22,11 +26,12 @@ export default class Neural {
 
   static next(rounds) {
     const lastRound = last(rounds);
-    const lastWagerIndex = wagerPattern.findIndex(_ => _ === lastRound.wager);
+    const lastWagerIndex = pattern.findIndex(_ => _ === lastRound.wager);
 
     let wager;
 
     if (lastRound.won) {
+      const level5 = Neural.level(5);
       /////////
       // WIN //
       /////////
@@ -39,11 +44,11 @@ export default class Neural {
       if (rounds.length >= 3) {
         const last3Rounds = rounds.slice(-3);
 
-        if (last3Rounds[1].wager >= 50 && last3Rounds[2].wager < 50) {
+        if (last3Rounds[1].wager >= level5 && last3Rounds[2].wager < level5) {
           level = 1;
         } else if (last3Rounds[1].won && last3Rounds[2].won) {
           level = 1;
-        } else if (lastRound.wager > 50) {
+        } else if (lastRound.wager > level5) {
           level = 2;
         } else if (last3Rounds.filter(_ => _?.won).length >= 2) {
           level = 2;
@@ -56,14 +61,14 @@ export default class Neural {
         level = 1;
       }
 
-      wager = wagerPattern[lastWagerIndex - level < 0 ? 0 : lastWagerIndex - level];
+      wager = pattern[lastWagerIndex - level < 0 ? 0 : lastWagerIndex - level];
     } else {
       //////////
       // LOSE //
       //////////
 
       // the next wager wil be on level higher
-      wager = wagerPattern[lastWagerIndex + 1 > rounds.length ? lastWagerIndex : lastWagerIndex + 1];
+      wager = pattern[lastWagerIndex + 1 > rounds.length ? lastWagerIndex : lastWagerIndex + 1];
     }
 
     return wager;

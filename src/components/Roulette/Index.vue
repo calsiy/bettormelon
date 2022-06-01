@@ -4,6 +4,7 @@ import { map, sumBy } from "lodash-es";
 import { computed, ref } from "vue";
 import Neural from "../../strategies/Neural";
 
+const level5 = Neural.level(5);
 const chipValues = [
   0.00000001,
   0.0000001,
@@ -97,7 +98,7 @@ const handleExportToCsv = () => {
     <h1>
       <a
           :href="`https://www.google.com/search?q=${totalBtc}+btc+to+aud`"
-          :style="{ 'text-decoration': 'none', color: `${total >= 50 ? 'green' : (total < 0 ? 'red' : 'inherit') }` }"
+          :style="{ 'text-decoration': 'none', color: `${total >= level5 ? 'green' : (total < 0 ? 'red' : 'inherit') }` }"
           target="_blank"
       >
         <b>${{ total }}</b>
@@ -114,10 +115,10 @@ const handleExportToCsv = () => {
 
       <tr
           v-for="round of rounds" :key="round.id"
-          :style="{ 'background-color': (round.wager > 50 && !round.won) ? 'lightblue' : 'inherit' }"
+          :style="{ 'background-color': (round.wager > level5 && !round.won) ? 'lightblue' : 'inherit' }"
       >
         <td>{{ round.index }}</td>
-        <td :style="{ color: `${round.wager >= 50 ? 'red' : 'inherit' }` }">
+        <td :style="{ color: `${round.wager >= level5 ? 'red' : 'inherit' }` }">
           {{ round.wager }}
         </td>
         <td>{{ (!round.bet || round.betting) ? "-" : (round.won ? "&#128526" : "&#128545") }}</td>
