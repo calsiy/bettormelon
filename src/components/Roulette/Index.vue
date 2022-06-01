@@ -12,7 +12,7 @@ const chipValues = [
   0.00001,
   0.0001
 ];
-const chipValue = ref(0.00001);
+const chipValue = ref(0.0001);
 
 const initWager = ref(5);
 const rounds = ref([]);
@@ -66,7 +66,7 @@ const handleExportToCsv = () => {
   const link = document.createElement("a");
   link.setAttribute("href", encodedUri);
   link.setAttribute("target", "_blank");
-  link.setAttribute("download", `roulette-${new Date().toISOString().slice(0, 10)}.csv`);
+  link.setAttribute("download", `roulette-${new Date().toISOString()}.csv`);
   document.body.appendChild(link);
 
   link.click();
