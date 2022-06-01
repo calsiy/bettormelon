@@ -59,6 +59,24 @@ const handleReset = () => {
   set(rounds, []);
 };
 
+const handleRevert = () => {
+  const savedRounds = get(rounds).slice(0, -1);
+
+  set(rounds, savedRounds.map((_, index) => {
+    let round = {
+      ..._,
+      index: index + 1
+    };
+
+    if (index === savedRounds.length - 1) {
+      round.betting = false;
+      round.bet = false;
+    }
+
+    return round;
+  }));
+};
+
 const handleExportToCsv = () => {
   const csvContent = "data:text/csv;charset=utf-8," +
       "Round,Wager,Result\n" +
@@ -134,8 +152,9 @@ const handleExportToCsv = () => {
       </tr>
     </table>
 
-    <button class="btn-export" @click="handleExportToCsv">Export</button>
-    <button class="btn-reset" @click="handleReset">Reset</button>
+    <button :disabled="!rounds.length" class="btn-revert" @click="handleRevert">Revert</button>
+    <button :disabled="!rounds.length" class="btn-export" @click="handleExportToCsv">Export</button>
+    <button :disabled="!rounds.length" class="btn-reset" @click="handleReset">Reset</button>
   </div>
 </template>
 
@@ -184,8 +203,13 @@ table .action {
   min-width: 75px;
 }
 
-.btn-export + .btn-reset {
+.btn-export + .btn-reset,
+.btn-revert + .btn-export {
   margin-left: 1rem;
+}
+
+.btn-revert {
+  background-color: lightsalmon;
 }
 
 .btn-reset {

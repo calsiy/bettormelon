@@ -37,14 +37,15 @@ export default class Neural {
       /////////
       let level;
 
-      // 1.
-      // if two consecutive wagers are won
-      // or if two out of three wagers are won
-      // the next wager is two levels lower
+      // 1. if two consecutive wagers are won or if two out of three wagers are won the next wager is two levels lower
       if (rounds.length >= 3) {
         const last3Rounds = rounds.slice(-3);
+        const level1 = Neural.level(1);
 
-        if (last3Rounds[1].wager >= level5 && last3Rounds[2].wager < level5) {
+        if (last3Rounds.filter(_ => _?.won).length === 3 && lastRound.wager === level1) {
+          // up one level if won 3 times with level 1
+          level = -1;
+        } else if (last3Rounds[1].wager >= level5 && last3Rounds[2].wager < level5) {
           level = 1;
         } else if (last3Rounds[1].won && last3Rounds[2].won) {
           level = 1;
@@ -56,8 +57,7 @@ export default class Neural {
           level = 1;
         }
       } else {
-        // 2.
-        // the next wager will be one level lower
+        // 2. the next wager will be one level lower
         level = 1;
       }
 
@@ -67,7 +67,7 @@ export default class Neural {
       // LOSE //
       //////////
 
-      // the next wager wil be on level higher
+      // the next wager will be on level higher
       wager = pattern[lastWagerIndex + 1 > rounds.length ? lastWagerIndex : lastWagerIndex + 1];
     }
 
