@@ -11,7 +11,7 @@ const chipValues = [
   0.00001,
   0.0001
 ];
-const chipValue = ref(0.00000001);
+const chipValue = ref(0.00001);
 
 const initRound = (
     {
@@ -65,7 +65,10 @@ const generateNextRound = () => {
     // if two consecutive wagers are won
     // or if two out of three wagers are won
     // the next wager is two levels lower
-    if (_rounds.length >= 3 && (_rounds.slice(-3).filter(_ => _?.won).length >= 2)) {
+    if (
+        (_rounds.length >= 3 && (_rounds.slice(-3).filter(_ => _?.won).length >= 2)) ||
+        (lastRound.wager >= 50)
+    ) {
       level = 2;
     } else {
       // 2.
@@ -128,7 +131,7 @@ const handleExportToCsv = () => {
 <template>
   <div>
     <section class="chip-value-wrapper">
-      <label for="chip-value">Chip Value: </label>
+      <label for="chip-value" style="padding-right: 15px;">Chip Value: </label>
       <select id="chip-value" v-model="chipValue">
         <option
             v-for="v of chipValues"
@@ -138,6 +141,7 @@ const handleExportToCsv = () => {
           {{ v }}
         </option>
       </select>
+      BTC
     </section>
 
     <form @submit.prevent="handleStartSession">
@@ -148,14 +152,14 @@ const handleExportToCsv = () => {
     <h1>
       <a
           :href="`https://www.google.com/search?q=${totalBtc}+btc+to+aud`"
-          :style="{ color: `${total > 90 ? 'green' : (total < 0 ? 'red' : 'inherit') }` }"
+          :style="{ 'text-decoration': 'none', color: `${total > 90 ? 'green' : (total < 0 ? 'red' : 'inherit') }` }"
           target="_blank"
       >
         <b>${{ total }}</b>
       </a>
     </h1>
 
-    <table>
+    <table v-show="rounds.length">
       <tr>
         <th>Round</th>
         <th>Wager</th>
@@ -163,7 +167,10 @@ const handleExportToCsv = () => {
         <th></th>
       </tr>
 
-      <tr v-for="round of rounds" :key="round.id">
+      <tr
+          v-for="round of rounds" :key="round.id"
+          :style="{ 'background-color': (round.wager > 50 && !round.won) ? 'lightblue' : 'inherit' }"
+      >
         <td>{{ round.index }}</td>
         <td :style="{ color: `${round.wager >= 50 ? 'red' : 'inherit' }` }">
           {{ round.wager }}
@@ -187,9 +194,11 @@ const handleExportToCsv = () => {
       </tr>
     </table>
 
-    <button class="btn-export" @click="handleExportToCsv">Export</button>
-    <hr>
-    <button class="btn-reset" @click="handleReset">Reset</button>
+    <template v-show="rounds.length">
+      <button class="btn-export" @click="handleExportToCsv">Export</button>
+      <hr>
+      <button class="btn-reset" @click="handleReset">Reset</button>
+    </template>
   </div>
 </template>
 

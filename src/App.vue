@@ -6,9 +6,7 @@ import Roulette from "./components/Roulette/Index.vue";
 </script>
 
 <template>
-  <div id="app">
-    <Roulette msg="Hello Vue 3 + Vite"/>
-  </div>
+  <Roulette/>
 </template>
 
 <style>
