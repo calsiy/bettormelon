@@ -49,25 +49,32 @@ const generateNextRound = () => {
 
   let wager;
 
-  // lose
-  if (!lastRound.won) {
+  if (lastRound.won) {
+    /////////
+    // win //
+    /////////
+    let level;
+
+    // 1.
+    // if two consecutive wagers are won
+    // or if two out of three wagers are won
+    // the next wager is two levels lower
+    if (_rounds.length >= 3 && (_rounds.slice(-3).filter(_ => _?.won).length >= 2)) {
+      level = 2;
+    } else {
+      // 2.
+      // the next wager will be one level lower
+      level = 1;
+    }
+
+    wager = wagerPattern[lastWagerIndex - level < 0 ? 0 : lastWagerIndex - level];
+  } else {
+    //////////
+    // lose //
+    //////////
+
     // the next wager wil be on level higher
     wager = wagerPattern[lastWagerIndex + 1 > _rounds.length ? _rounds.length : lastWagerIndex + 1];
-  }
-
-  // win
-  if (lastRound.won) {
-    // the next wager will be one level lower
-    wager = wagerPattern[lastWagerIndex - 1 < 0 ? 0 : lastWagerIndex - 1];
-  }
-
-  // if two consecutive wagers are won
-  // or if two out of three wagers are won
-  // the next wager is two levels lower
-  if (_rounds.length >= 3) {
-    if (_rounds.slice(-3).filter(_ => _?.won).length >= 2) {
-      wager = wagerPattern[lastWagerIndex - 2 < 0 ? 0 : lastWagerIndex - 2];
-    }
   }
 
   set(rounds, [..._rounds, initRound({
@@ -137,9 +144,7 @@ const handleExportToCsv = () => {
         <td>{{ round.wager }}</td>
         <td>{{ (!round.bet || round.betting) ? "-" : (round.won ? "&#128526" : "&#128545") }}</td>
         <td class="action">
-          <button :disabled="round.bet" @click="handleBet(round)">
-            &#128640
-          </button>
+          <button :disabled="round.bet" @click="handleBet(round)">&#128640</button>
           <span v-show="round.betting">
             <button @click="handleSaveResult(round, true)">&#128077</button>
             <button @click="handleSaveResult(round, false)">&#128078</button>
