@@ -141,13 +141,17 @@ const handleExportToCsv = () => {
     </section>
 
     <form @submit.prevent="handleStartSession">
-      <input type="text" v-model="initWager">
-      <button>Start</button>
+      <input type="text" v-model="initWager" :disabled="rounds.length">
+      <button :disabled="rounds.length">Start</button>
     </form>
 
     <h1>
-      <a :href="`https://www.google.com/search?q=${totalBtc}+btc+to+aud`" target="_blank">
-        ${{ total }}
+      <a
+          :href="`https://www.google.com/search?q=${totalBtc}+btc+to+aud`"
+          :style="{ color: `${total > 90 ? 'green' : (total < 0 ? 'red' : 'inherit') }` }"
+          target="_blank"
+      >
+        <b>${{ total }}</b>
       </a>
     </h1>
 
@@ -161,14 +165,24 @@ const handleExportToCsv = () => {
 
       <tr v-for="round of rounds" :key="round.id">
         <td>{{ round.index }}</td>
-        <td>{{ round.wager }}</td>
+        <td :style="{ color: `${round.wager >= 50 ? 'red' : 'inherit' }` }">
+          {{ round.wager }}
+        </td>
         <td>{{ (!round.bet || round.betting) ? "-" : (round.won ? "&#128526" : "&#128545") }}</td>
         <td class="action">
           <button :disabled="round.bet" @click="handleBet(round)">&#128640</button>
-          <span v-show="round.betting">
-            <button @click="handleSaveResult(round, true)">&#128077</button>
-            <button @click="handleSaveResult(round, false)">&#128078</button>
-          </span>
+          <button
+              @click="handleSaveResult(round, true)"
+              :disabled="!round.betting"
+          >
+            &#128077
+          </button>
+          <button
+              :disabled="!round.betting"
+              @click="handleSaveResult(round, false)"
+          >
+            &#128078
+          </button>
         </td>
       </tr>
     </table>
@@ -188,8 +202,12 @@ table {
   margin: 2rem auto 0;
 }
 
+table td {
+  min-width: 120px;
+}
+
 table .action {
-  min-width: 200px;
+  text-align: right;
 }
 
 .btn-export {
