@@ -4,6 +4,14 @@ import { last, map, sumBy } from "lodash-es";
 import { computed, ref } from "vue";
 
 const wagerPattern = [5, 8, 13, 20, 35, 50, 75, 100];
+const chipValues = [
+  0.00000001,
+  0.0000001,
+  0.000001,
+  0.00001,
+  0.0001
+];
+const chipValue = ref(0.00000001);
 
 const initRound = (
     {
@@ -19,13 +27,12 @@ const initRound = (
   won: false
 });
 
-const btcFormatter = 0.0001;
 const initWager = ref(5);
 const rounds = ref([]);
 const total = computed(() => sumBy(
     get(rounds).filter(_ => _?.bet), _ => _.won ? _.wager : _.wager * -1)
 );
-const totalBtc = computed(() => get(total) * btcFormatter);
+const totalBtc = computed(() => get(total) * get(chipValue));
 
 const handleStartSession = () => {
   set(rounds, [initRound({
@@ -101,9 +108,9 @@ const handleReset = () => {
 
 const handleExportToCsv = () => {
   const csvContent = "data:text/csv;charset=utf-8," +
-      `Round,Wager,Result` +
-      get(rounds).map(_ => `${_?.index},${_?.wager},${_?.won ? "Y" : "N"}`).join("\n") +
-      `,${get(total)}\n`;
+      "Round,Wager,Result\n" +
+      get(rounds).filter(_ => _?.bet).map(_ => `${_?.index},${_?.wager},${_?.won ? "Y" : "N"}`).join("\n") +
+      `,,${get(total)}`;
 
   const encodedUri = encodeURI(csvContent);
 
@@ -120,6 +127,19 @@ const handleExportToCsv = () => {
 
 <template>
   <div>
+    <section class="chip-value-wrapper">
+      <label for="chip-value">Chip Value: </label>
+      <select id="chip-value" v-model="chipValue">
+        <option
+            v-for="v of chipValues"
+            :key="v"
+            :value="v"
+        >
+          {{ v }}
+        </option>
+      </select>
+    </section>
+
     <form @submit.prevent="handleStartSession">
       <input type="text" v-model="initWager">
       <button>Start</button>
@@ -153,13 +173,17 @@ const handleExportToCsv = () => {
       </tr>
     </table>
 
-    <button class="btn-reset" @click="handleReset">Reset</button>
+    <button class="btn-export" @click="handleExportToCsv">Export</button>
     <hr>
-    <button @click="handleExportToCsv">Export</button>
+    <button class="btn-reset" @click="handleReset">Reset</button>
   </div>
 </template>
 
 <style scoped>
+.chip-value-wrapper {
+  margin-bottom: 1rem;
+}
+
 table {
   margin: 2rem auto 0;
 }
@@ -168,8 +192,13 @@ table .action {
   min-width: 200px;
 }
 
-.btn-reset {
+.btn-export {
   margin-top: 3rem;
+}
+
+.btn-reset {
+  background-color: palevioletred;
+  color: white;
   display: inline-block;
 }
 </style>
