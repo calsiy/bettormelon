@@ -42,12 +42,10 @@ export default class Neural {
         const last3Rounds = rounds.slice(-3);
         const level1 = Neural.level(1);
 
-        if (last3Rounds.filter(_ => _?.won).length === 3 && lastRound.wager === level1) {
+        if (last3Rounds.filter(_ => _?.won && (_?.wager === level1)).length === 3) {
           // up one level if won 3 times with level 1
           level = -1;
-        } else if (last3Rounds[1].wager >= level5 && last3Rounds[2].wager < level5) {
-          level = 1;
-        } else if (last3Rounds[1].won && last3Rounds[2].won) {
+        } else if ((last3Rounds[1].wager >= level5 && last3Rounds[1].won) && lastRound.wager < level5) {
           level = 1;
         } else if (lastRound.wager > level5) {
           level = 2;
