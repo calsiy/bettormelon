@@ -13,7 +13,7 @@ const chipValues = [
   0.00001,
   0.0001
 ];
-const selectedChip = ref(0.00001);
+const selectedChip = ref(0.000001);
 
 const coins = ["BTC", "LTC"];
 const selectedCoin = ref("BTC");
