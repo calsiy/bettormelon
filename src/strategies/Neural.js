@@ -32,9 +32,9 @@ export default class Neural {
 
     if (lastRound.won) {
       const level5 = Neural.level(5);
-      /////////
-      // WIN //
-      /////////
+      /////////////////////////////////////////////////////////////////////////
+      /// WIN ////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////
       let level;
 
       // 1. if two consecutive wagers are won or if two out of three wagers are won the next wager is two levels lower
@@ -45,12 +45,12 @@ export default class Neural {
         if (last3Rounds.filter(_ => _?.won && (_?.wager === level1)).length === 3) {
           // up one level if won 3 times with level 1
           level = -1;
-        } else if ((last3Rounds[1].wager >= level5 && last3Rounds[1].won) && lastRound.wager < level5) {
-          level = 1;
         } else if (lastRound.wager >= level5) {
           level = 2;
         } else if (last3Rounds.filter(_ => _?.won).length >= 2) {
           level = 2;
+        } else if ((last3Rounds[1].wager >= level5 && last3Rounds[1].won) && lastRound.wager < level5) {
+          level = 1;
         } else {
           level = 1;
         }
@@ -59,14 +59,16 @@ export default class Neural {
         level = 1;
       }
 
-      wager = pattern[lastWagerIndex - level < 0 ? 0 : lastWagerIndex - level];
+      const nextWagerIndex = lastWagerIndex - level;
+      wager = pattern[nextWagerIndex < 0 ? 0 : nextWagerIndex];
     } else {
-      //////////
-      // LOSE //
-      //////////
+      /////////////////////////////////////////////////////////////////////////
+      /// LOSE ////////////////////////////////////////////////////////////////
+      /////////////////////////////////////////////////////////////////////////
 
       // the next wager will be on level higher
-      wager = pattern[lastWagerIndex + 1 > rounds.length ? lastWagerIndex : lastWagerIndex + 1];
+      const nextWagerIndex = lastWagerIndex + 1;
+      wager = pattern[nextWagerIndex >= pattern.length ? lastWagerIndex : nextWagerIndex];
     }
 
     return wager;
