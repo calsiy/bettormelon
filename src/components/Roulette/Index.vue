@@ -13,7 +13,7 @@ const chipValues = [
   0.00001,
   0.0001
 ];
-const selectedChip = ref(0.0001);
+const selectedChip = ref(0.00001);
 
 const coins = ["BTC", "LTC"];
 const selectedCoin = ref("BTC");
@@ -113,18 +113,6 @@ const handleExportToCsv = () => {
       <button :disabled="rounds.length">Start</button>
     </form>
 
-    <header>
-      <h1>
-        <a
-            :href="`https://www.google.com/search?q=${totalBtc}+${selectedCoin}+to+aud`"
-            :style="{ 'text-decoration': 'none', color: `${total >= level5 ? 'green' : (total < 0 ? 'red' : 'inherit') }` }"
-            target="_blank"
-        >
-          <b>${{ total }}</b>
-        </a>
-      </h1>
-    </header>
-
     <table v-show="rounds.length">
       <tr>
         <th>Round</th>
@@ -151,6 +139,18 @@ const handleExportToCsv = () => {
         </td>
       </tr>
     </table>
+
+    <header v-show="rounds.length">
+      <h1>
+        <a
+            :href="`https://www.google.com/search?q=${totalBtc}+${selectedCoin}+to+aud`"
+            :style="{ 'text-decoration': 'none', color: `${total >= level5 ? 'green' : (total < 0 ? 'red' : 'inherit') }` }"
+            target="_blank"
+        >
+          <b>${{ total }}</b>
+        </a>
+      </h1>
+    </header>
 
     <button :disabled="!rounds.length" class="btn-revert" @click="handleRevert">Revert</button>
     <button :disabled="!rounds.length" class="btn-export" @click="handleExportToCsv">Export</button>
