@@ -5,7 +5,9 @@ import { computed, ref } from "vue";
 import Neural from "../../strategies/Neural";
 import { toCsv } from "../../utils/export";
 
-const level5 = Neural.level(5);
+const strategy = new Neural();
+
+const level5 = strategy.level(5);
 const chips = [
   0.00000001,
   0.0000001,
@@ -26,7 +28,7 @@ const total = computed(() => sumBy(get(rounds).filter(_ => _?.bet), _ => _.margi
 const totalCoin = computed(() => get(total) * get(selectedChip));
 
 const handleStartSession = () => {
-  set(rounds, [Neural.init({
+  set(rounds, [strategy.init({
     index: 1,
     wager: get(initWager)
   })]);
@@ -51,9 +53,9 @@ const handleSaveResult = (round, won) => {
 
   const _rounds = get(rounds);
   // generate next round's wager
-  set(rounds, [..._rounds, Neural.init({
+  set(rounds, [..._rounds, strategy.init({
     index: _rounds.length + 1,
-    wager: Neural.next(_rounds)
+    wager: strategy.next(_rounds)
   })]);
 };
 
