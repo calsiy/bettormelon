@@ -20,6 +20,7 @@ const selectedCoin = ref("BTC");
 
 const initWager = ref(5);
 const rounds = ref([]);
+const isGameStarted = computed(() => get(rounds)?.length > 0);
 const total = computed(() => sumBy(get(rounds).filter(_ => _?.bet), _ => _.margin));
 const totalBtc = computed(() => get(total) * get(selectedChip));
 
@@ -108,53 +109,60 @@ const handleExportToCsv = () => {
       </select>
     </section>
 
-    <form @submit.prevent="handleStartSession">
-      <input type="text" v-model="initWager" :disabled="rounds.length">
-      <button :disabled="rounds.length">Start</button>
+    <form v-if="!isGameStarted" @submit.prevent="handleStartSession">
+      <input
+          style="margin-right: 10px; max-width: 230px;"
+          type="text"
+          v-model="initWager"
+      >
+      <button>Start</button>
     </form>
 
-    <table v-show="rounds.length">
-      <tr>
-        <th>Round</th>
-        <th>Wager</th>
-        <th>Result</th>
-        <th></th>
-      </tr>
+    <template v-else>
 
-      <tr
-          v-for="round of rounds" :key="round.id"
-          :style="{ 'background-color': (round.wager > level5 && !round.won) ? 'lightblue' : 'inherit' }"
-      >
-        <td>{{ round.index }}</td>
-        <td :style="{ color: `${round.wager >= level5 ? 'red' : 'inherit' }` }">
-          {{ round.wager }}
-        </td>
-        <td>{{ (!round.bet || round.betting) ? "-" : (round.won ? "&#128526" : "&#128545") }}</td>
-        <td class="action">
-          <button v-if="!round.bet" @click="handleBet(round)">&#128640</button>
-          <template v-if="round.betting">
-            <button @click="handleSaveResult(round, true)">&#128077</button>
-            <button @click="handleSaveResult(round, false)">&#128078</button>
-          </template>
-        </td>
-      </tr>
-    </table>
+      <table>
+        <tr>
+          <th>Round</th>
+          <th>Wager</th>
+          <th>Result</th>
+          <th></th>
+        </tr>
 
-    <header v-show="rounds.length">
-      <h1>
-        <a
-            :href="`https://www.google.com/search?q=${totalBtc}+${selectedCoin}+to+aud`"
-            :style="{ 'text-decoration': 'none', color: `${total >= level5 ? 'green' : (total < 0 ? 'red' : 'inherit') }` }"
-            target="_blank"
+        <tr
+            v-for="round of rounds" :key="round.id"
+            :style="{ 'background-color': (round.wager > level5 && !round.won) ? 'lightblue' : 'inherit' }"
         >
-          <b>${{ total }}</b>
-        </a>
-      </h1>
-    </header>
+          <td>{{ round.index }}</td>
+          <td :style="{ color: `${round.wager >= level5 ? 'red' : 'inherit' }` }">
+            {{ round.wager }}
+          </td>
+          <td>{{ (!round.bet || round.betting) ? "-" : (round.won ? "&#128526" : "&#128545") }}</td>
+          <td class="action">
+            <button v-if="!round.bet" @click="handleBet(round)">&#128640</button>
+            <template v-if="round.betting">
+              <button @click="handleSaveResult(round, true)">&#128077</button>
+              <button @click="handleSaveResult(round, false)">&#128078</button>
+            </template>
+          </td>
+        </tr>
+      </table>
 
-    <button :disabled="!rounds.length" class="btn-revert" @click="handleRevert">Revert</button>
-    <button :disabled="!rounds.length" class="btn-export" @click="handleExportToCsv">Export</button>
-    <button :disabled="!rounds.length" class="btn-reset" @click="handleReset">Reset</button>
+      <header>
+        <h1>
+          <a
+              :href="`https://www.google.com/search?q=${totalBtc}+${selectedCoin}+to+aud`"
+              :style="{ 'text-decoration': 'none', color: `${total >= level5 ? 'green' : (total < 0 ? 'red' : 'inherit') }` }"
+              target="_blank"
+          >
+            <b>${{ total }}</b>
+          </a>
+        </h1>
+      </header>
+
+      <button class="btn-revert" @click="handleRevert">Revert</button>
+      <button class="btn-export" @click="handleExportToCsv">Export</button>
+      <button class="btn-reset" @click="handleReset">Reset</button>
+    </template>
   </div>
 </template>
 
