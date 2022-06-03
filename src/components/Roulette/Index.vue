@@ -3,10 +3,10 @@ import { get, set } from "@vueuse/core";
 import { map, sumBy } from "lodash-es";
 import { computed, ref } from "vue";
 import Neural from "../../strategies/Neural";
+import { toCsv } from "../../utils/export";
 
 const level5 = Neural.level(5);
-
-const chipValues = [
+const chips = [
   0.00000001,
   0.0000001,
   0.000001,
@@ -22,7 +22,7 @@ const initWager = ref(5);
 const rounds = ref([]);
 const isGameStarted = computed(() => get(rounds)?.length > 0);
 const total = computed(() => sumBy(get(rounds).filter(_ => _?.bet), _ => _.margin));
-const totalBtc = computed(() => get(total) * get(selectedChip));
+const totalCoin = computed(() => get(total) * get(selectedChip));
 
 const handleStartSession = () => {
   set(rounds, [Neural.init({
@@ -79,21 +79,12 @@ const handleRevert = () => {
 };
 
 const handleExportToCsv = () => {
-  const csvContent = "data:text/csv;charset=utf-8," +
+  const content = "data:text/csv;charset=utf-8," +
       "Round,Wager,Result\n" +
       get(rounds).filter(_ => _?.bet).map(_ => `${_?.index},${_?.wager},${_?.won ? "Y" : "N"}`).join("\n") +
       `,,${get(total)}`;
 
-  const encodedUri = encodeURI(csvContent);
-
-  const link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("target", "_blank");
-  link.setAttribute("download", `roulette-${new Date().toISOString()}.csv`);
-  document.body.appendChild(link);
-
-  link.click();
-  link.remove();
+  toCsv(content, "roulette");
 };
 </script>
 
@@ -102,7 +93,7 @@ const handleExportToCsv = () => {
     <section class="chip-value-wrapper">
       <label for="chip-value" style="padding-right: 15px;">Chip Value: </label>
       <select id="chip-value" v-model="selectedChip">
-        <option v-for="v of chipValues" :key="v" :value="v">{{ v }}</option>
+        <option v-for="v of chips" :key="v" :value="v">{{ v }}</option>
       </select>
       <select v-model="selectedCoin" style="margin-left: 15px;">
         <option v-for="c of coins" :key="c" :value="c">{{ c }}</option>
@@ -150,7 +141,7 @@ const handleExportToCsv = () => {
       <header>
         <h1>
           <a
-              :href="`https://www.google.com/search?q=${totalBtc}+${selectedCoin}+to+aud`"
+              :href="`https://www.google.com/search?q=${totalCoin}+${selectedCoin}+to+aud`"
               :style="{ 'text-decoration': 'none', color: `${total >= level5 ? 'green' : (total < 0 ? 'red' : 'inherit') }` }"
               target="_blank"
           >
